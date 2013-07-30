@@ -30,15 +30,13 @@
 - (void) resizeViews
 {
     Class adBannerViewClass = NSClassFromString(@"ADBannerView");
-	if (adBannerViewClass && self.adView)
-	{
+	if (adBannerViewClass && self.adView) {
         CGRect webViewFrame = [super webView].frame;
         CGRect superViewFrame = [[super webView] superview].frame;
         CGRect adViewFrame = self.adView.frame;
         
         BOOL adIsShowing = [[[super webView] superview].subviews containsObject:self.adView];
-        if (adIsShowing) 
-        {
+        if (adIsShowing) {
             if (self.bannerIsAtBottom) {
                 webViewFrame.origin.y = 0;
                 CGRect adViewFrame = self.adView.frame;
@@ -50,9 +48,7 @@
             }
             
             webViewFrame.size.height = self.isLandscape? (superViewFrame.size.width - adViewFrame.size.height) : (superViewFrame.size.height - adViewFrame.size.height);
-        } 
-        else 
-        {
+        } else {
             webViewFrame.size = self.isLandscape? CGSizeMake(superViewFrame.size.height, superViewFrame.size.width) : superViewFrame.size;
             webViewFrame.origin = CGPointZero;
         }
@@ -90,8 +86,7 @@
     }
     
     Class adBannerViewClass = NSClassFromString(@"ADBannerView");
-    if (adBannerViewClass && self.adView)
-    {
+    if (adBannerViewClass && self.adView) {
         self.adView.currentContentSizeIdentifier = self.isLandscape ? ADBannerContentSizeIdentifierLandscape : ADBannerContentSizeIdentifierPortrait;
         [self resizeViews];
     }
@@ -135,8 +130,7 @@
 	NSLog(@"CDViAd Prepare Ad At Bottom: %d", atBottom);
 	
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
-	if (adBannerViewClass && !self.adView)
-	{
+	if (adBannerViewClass && !self.adView) {
 		self.adView = [[ADBannerView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
         // we are still using these constants even though they are deprecated - if it is changed, iOS 4 devices < 4.3 will crash.
         // will need to do a run-time iOS version check	
@@ -173,8 +167,7 @@
 		return;
 	}
 	
-	if (show)
-	{
+	if (show) {
 		[UIView beginAnimations:@"blah" context:NULL];
 		[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
 
@@ -185,9 +178,7 @@
 		[UIView commitAnimations];
 
 		self.bannerIsVisible = YES;
-	}
-	else 
-	{
+	} else {
 		[UIView beginAnimations:@"blah" context:NULL];
 		[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
 		
@@ -207,23 +198,23 @@
 - (void)bannerViewDidLoadAd:(ADBannerView *)banner
 {
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
-    if (adBannerViewClass)
-    {
-
-		[super writeJavascript:@"Cordova.fireEvent('iAdBannerViewDidLoadAdEvent');"];
-
+    if (adBannerViewClass) {
+		[super writeJavascript:@"(function(){"
+		"var e = document.createEvent('Events');"
+		"e.initEvent('iAdBannerView.LoadAd');"
+		"document.dispatchEvent(e);"
+		"})();"];
     }
 }
 
 - (void)bannerView:(ADBannerView *)banner didFailToReceiveAdWithError:(NSError*)error
 {
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
-    if (adBannerViewClass)
-    {
+    if (adBannerViewClass) {
 		NSString* jsString = 
 		@"(function(){"
 		"var e = document.createEvent('Events');"
-		"e.initEvent('iAdBannerViewDidFailToReceiveAdWithErrorEvent');"
+		"e.initEvent('iAdBannerView.FailLoadAd');"
 		"e.error = '%@';"
 		"document.dispatchEvent(e);"
 		"})();";
