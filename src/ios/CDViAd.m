@@ -1,21 +1,17 @@
 //
-//  SAiOSAdPlugin.m
+//  CDViAd.m
 //  Ad Plugin for PhoneGap
 //
 //  Created by shazron on 10-07-12.
 //  Copyright 2010 Shazron Abdullah. All rights reserved.
 //  Cordova v1.5.0 Support added 2012 @RandyMcMillan
-//
+//	Cordova v3.0.0 Support added 2013 @LimingXie
 
-#import "SAiOSAdPlugin.h"
-
-#ifdef CORDOVA_FRAMEWORK
+#import "CDViAd.h"
 #import <Cordova/CDVDebug.h>
-#else
-#import "CDVDebug.h"
-#endif
 
-@interface SAiOSAdPlugin(PrivateMethods)
+
+@interface CDViAd(PrivateMethods)
 
 - (void) __prepare:(BOOL)atBottom;
 - (void) __showAd:(BOOL)show;
@@ -23,7 +19,7 @@
 @end
 
 
-@implementation SAiOSAdPlugin
+@implementation CDViAd
 
 @synthesize adView;
 @synthesize bannerIsVisible, bannerIsInitialized, bannerIsAtBottom, isLandscape;
@@ -136,7 +132,7 @@
 
 - (void) __prepare:(BOOL)atBottom
 {
-	NSLog(@"SAiOSAdPlugin Prepare Ad At Bottom: %d", atBottom);
+	NSLog(@"CDViAd Prepare Ad At Bottom: %d", atBottom);
 	
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
 	if (adBannerViewClass && !self.adView)
@@ -163,7 +159,7 @@
 
 - (void) __showAd:(BOOL)show
 {
-	NSLog(@"SAiOSAdPlugin Show Ad: %d", show);
+	NSLog(@"CDViAd Show Ad: %d", show);
 	
 	if (!self.bannerIsInitialized){
 		[self __prepare:NO];
