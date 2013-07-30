@@ -70,8 +70,12 @@
     }
 }
 
-- (void) orientationChanged:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
+- (void) orientationChanged:(CDVInvokedUrlCommand *)command
 {
+    CDVPluginResult *pluginResult;
+    NSString *callbackId = command.callbackId;
+    NSArray* arguments = command.arguments;
+
     NSInteger orientation = [[arguments objectAtIndex:0] integerValue];
 
     switch (orientation) {
@@ -97,8 +101,12 @@
     }
 }
 
-- (void) prepare:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
+- (void) prepare:(CDVInvokedUrlCommand *)command
 {
+    CDVPluginResult *pluginResult;
+    NSString *callbackId = command.callbackId;
+    NSArray* arguments = command.arguments;
+
 	NSUInteger argc = [arguments count];
 	if (argc > 1) {
 		return;
@@ -108,8 +116,12 @@
 	[self __prepare:[atBottomValue boolValue]];
 }
 
-- (void) showAd:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options
+- (void) showAd:(CDVInvokedUrlCommand *)command
 {
+    CDVPluginResult *pluginResult;
+    NSString *callbackId = command.callbackId;
+    NSArray* arguments = command.arguments;
+
 	NSUInteger argc = [arguments count];
 	if (argc > 1) {
 		return;

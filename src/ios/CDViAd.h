@@ -9,19 +9,11 @@
 
 #import <Foundation/Foundation.h>
 #import <iAd/iAd.h>
-#import "SAiOSAdPlugin.h"
-
-
-#ifdef CORDOVA_FRAMEWORK
 #import <Cordova/CDVPlugin.h>
-#else
-#import "CDVPlugin.h"
-#endif
+#import "CDViAd.h"
 
+@interface CDViAd : CDVPlugin <ADBannerViewDelegate> {
 
-@interface SAiOSAdPlugin : CDVPlugin <ADBannerViewDelegate> {
-
-    
 	ADBannerView* adView;
 	
 	BOOL bannerIsVisible;
@@ -36,8 +28,8 @@
 @property (assign)				BOOL isLandscape;
 
 
-- (void) prepare:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
-- (void) showAd:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
-- (void) orientationChanged:(NSMutableArray*)arguments withDict:(NSMutableDictionary*)options;
+- (void) prepare:(CDVInvokedUrlCommand *)command
+- (void) showAd:(CDVInvokedUrlCommand *)command
+- (void) orientationChanged:(CDVInvokedUrlCommand *)command
 
 @end

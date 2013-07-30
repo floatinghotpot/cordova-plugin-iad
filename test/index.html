@@ -12,7 +12,7 @@
 	<!-- If you application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
 	
         <script type="text/javascript" charset="utf-8" src="cordova-1.5.0.js"></script>
-    	<script type="text/javascript" charset="utf-8" src="SAiOSAdPlugin.js"></script>
+    	<script type="text/javascript" charset="utf-8" src="iAd"></script>
         
     <script type="text/javascript" charset="utf-8">
 
@@ -43,23 +43,23 @@
         function onDeviceReady()
         {
             // listen for orientation changes
-            window.addEventListener("orientationchange", window.plugins.iAdPlugin.orientationChanged, false);
-            // listen for the "iAdBannerViewDidLoadAdEvent" that is sent by the iAdPlugin
+            window.addEventListener("orientationchange", window.plugins.iAd.orientationChanged, false);
+            // listen for the "iAdBannerViewDidLoadAdEvent" that is sent by the iAd
             document.addEventListener("iAdBannerViewDidLoadAdEvent", iAdBannerViewDidLoadAdEventHandler, false);
-            // listen for the "iAdBannerViewDidFailToReceiveAdWithErrorEvent" that is sent by the iAdPlugin
+            // listen for the "iAdBannerViewDidFailToReceiveAdWithErrorEvent" that is sent by the iAd
             document.addEventListener("iAdBannerViewDidFailToReceiveAdWithErrorEvent", iAdBannerViewDidFailToReceiveAdWithErrorEventHandler, false);
             
             var adAtBottom = false; 
             setTimeout(function() {
-                       window.plugins.iAdPlugin.prepare(adAtBottom); // by default, ad is at Top
+                       window.plugins.iAd.prepare(adAtBottom); // by default, ad is at Top
                        }, 1000);
-                       window.plugins.iAdPlugin.orientationChanged(true);//trigger immediately so iAd knows its orientation on first load
+                       window.plugins.iAd.orientationChanged(true);//trigger immediately so iAd knows its orientation on first load
         }
 		
         function iAdBannerViewDidFailToReceiveAdWithErrorEventHandler(evt)
         {
             alert(evt.error);
-            window.plugins.iAdPlugin.showAd(false);
+            window.plugins.iAd.showAd(false);
             var elem = document.getElementById("showAd");
             elem.checked = false;
         }
@@ -74,7 +74,7 @@
             elem = document.getElementById("showAd");
             elem.disabled = false;
             elem.checked = true;
-            window.plugins.iAdPlugin.showAd(true);
+            window.plugins.iAd.showAd(true);
             
             gTotalAdsLoaded++;
             
@@ -132,7 +132,7 @@
         
         function showAdClicked(evt)
         {
-            window.plugins.iAdPlugin.showAd(evt.checked);
+            window.plugins.iAd.showAd(evt.checked);
         }
 	    
     </script>
