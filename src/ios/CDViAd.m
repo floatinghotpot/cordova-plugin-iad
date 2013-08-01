@@ -13,7 +13,7 @@
 
 @interface CDViAd(PrivateMethods)
 
-- (void) __prepare:(BOOL)atBottom;
+- (void) __prepare:(BOOL)atTop;
 - (void) __showAd:(BOOL)show;
 
 @end
@@ -22,7 +22,7 @@
 @implementation CDViAd
 
 @synthesize adView;
-@synthesize bannerIsVisible, bannerIsInitialized, bannerIsAtBottom, isLandscape;
+@synthesize bannerIsVisible, bannerIsInitialized, bannerAtTop, isLandscape;
 
 #pragma mark -
 #pragma mark Public Methods
@@ -43,7 +43,7 @@
   return self;
 }
 
-- (void) prepare:(CDVInvokedUrlCommand *)command
+- (void) createBannerView:(CDVInvokedUrlCommand *)command
 {
     CDVPluginResult *pluginResult;
     NSString *callbackId = command.callbackId;
@@ -54,10 +54,10 @@
 		return;
 	}
 
-	BOOL atBottom = NO;
-	NSString* atBottomValue = [arguments objectAtIndex:0];
-	if( atBottomValue ) atBottom = [atBottomValue boolValue];
-	[self __prepare:atBottom];
+	BOOL atTop = NO;
+	NSString* atTopValue = [arguments objectAtIndex:0];
+	if( atTopValue ) atTop = [atTopValue boolValue];
+	[self __prepare:atTop];
 
 	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 	[self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
@@ -83,14 +83,12 @@
 	[self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
 }
 
-- (void)deviceOrientationChange:(NSNotification *)notification {
-
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
     Class adBannerViewClass = NSClassFromString(@"ADBannerView");
     if (adBannerViewClass && self.adView) {
 
-		UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
-
-		if( UIInterfaceOrientationIsLandscape( currentOrientation ) ) {
+		if( UIInterfaceOrientationIsLandscape( toInterfaceOrientation ) ) {
 			self.isLandscape = YES;
 			self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierLandscape;
 		} else {
@@ -112,14 +110,14 @@
 
         BOOL adIsShowing = [[[super webView] superview].subviews containsObject:self.adView];
         if (adIsShowing) {
-            if (self.bannerIsAtBottom) {
+            if (self.bannerAtTop) {
+                webViewFrame.origin.y = adViewFrame.size.height;
+            } else {
                 webViewFrame.origin.y = 0;
                 CGRect adViewFrame = self.adView.frame;
                 CGRect superViewFrame = [[super webView] superview].frame;
                 adViewFrame.origin.y = (self.isLandscape ? superViewFrame.size.width : superViewFrame.size.height) - adViewFrame.size.height;
                 self.adView.frame = adViewFrame;
-            } else {
-                webViewFrame.origin.y = adViewFrame.size.height;
             }
 
             webViewFrame.size.height = self.isLandscape? (superViewFrame.size.width - adViewFrame.size.height) : (superViewFrame.size.height - adViewFrame.size.height);
@@ -140,27 +138,28 @@
 #pragma mark -
 #pragma mark Private Methods
 
-- (void) __prepare:(BOOL)atBottom
+- (void) __prepare:(BOOL)atTop
 {
-	NSLog(@"CDViAd Prepare Ad At Bottom: %d", atBottom);
+	NSLog(@"CDViAd Prepare Ad, bannerAtTop: %d", atTop);
 	
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
 	if (adBannerViewClass && !self.adView) {
-		self.adView = [[ADBannerView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
-        // we are still using these constants even though they are deprecated - if it is changed, iOS 4 devices < 4.3 will crash.
-        // will need to do a run-time iOS version check	
+		ADBannerView *self.adView = [[ADBannerView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
 		self.adView.requiredContentSizeIdentifiers = [NSSet setWithObjects: ADBannerContentSizeIdentifierPortrait, ADBannerContentSizeIdentifierLandscape, nil];		
 
-		self.adView.delegate = self;
-        
-        NSString* contentSizeId = (self.isLandscape ? ADBannerContentSizeIdentifierLandscape : ADBannerContentSizeIdentifierPortrait);
-
-        self.adView.currentContentSizeIdentifier = contentSizeId;
-		
-		if (atBottom) {
-			self.bannerIsAtBottom = YES;
+		UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
+		if( UIInterfaceOrientationIsLandscape( currentOrientation ) ) {
+			self.isLandscape = YES;
+	        self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierLandscape;
+		} else {
+			self.isLandscape = NO;
+	        self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierPortrait;
 		}
-        
+
+		self.adView.delegate = self;
+		[self.view addSubview:self.adView];
+
+		self.bannerAtTop = atTop;
 		self.bannerIsVisible = NO;
 		self.bannerIsInitialized = YES;
 	}
@@ -210,15 +209,23 @@
 #pragma mark -
 #pragma ADBannerViewDelegate
 
+- (BOOL)bannerViewActionShouldBegin:(ADBannerView *)banner willLeaveApplication:(BOOL)willLeave
+{
+    NSLog(@"Banner view is beginning an ad action");
+    if (!willLeave) {
+    	[self writeJavascript:@"cordova.fireDocumentEvent('onClickAd');"];
+    }
+    return YES;
+}
 - (void)bannerViewDidLoadAd:(ADBannerView *)banner
 {
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
     if (adBannerViewClass) {
-		[super writeJavascript:@"(function(){"
-		"var e = document.createEvent('Events');"
-		"e.initEvent('iAdBannerView.LoadAd');"
-		"document.dispatchEvent(e);"
-		"})();"];
+		if (!self.bannerIsVisible) {
+			[self __showAd:YES];
+		}
+
+		[self writeJavascript:@"cordova.fireDocumentEvent('onReceiveAd');"];
     }
 }
 
@@ -226,15 +233,14 @@
 {
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
     if (adBannerViewClass) {
-		NSString* jsString = 
-		@"(function(){"
-		"var e = document.createEvent('Events');"
-		"e.initEvent('iAdBannerView.FailLoadAd');"
-		"e.error = '%@';"
-		"document.dispatchEvent(e);"
-		"})();";
-		
-		[super writeJavascript:[NSString stringWithFormat:jsString, [error description]]];
+		if ( self.bannerIsVisible ) {
+			[self __showAd:NO];
+		}
+
+		NSString *jsString =
+			@"cordova.fireDocumentEvent('onFailedToReceiveAd',"
+			@"{ 'error': '%@' });";
+		[self writeJavascript:[NSString stringWithFormat:jsString, [error description]]];
     }
 }
 

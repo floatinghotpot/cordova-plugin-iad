@@ -1,6 +1,6 @@
 //
-//  SAiOSAdPlugin.h
-//  ADPlugin for PhoneGap/Cordova
+//  CDViAd.h
+//  iAd Plugin for PhoneGap/Cordova
 //
 //  Created by shazron on 10-07-12.
 //  Copyright 2010 Shazron Abdullah. All rights reserved.
@@ -13,22 +13,22 @@
 #import "CDViAd.h"
 
 @interface CDViAd : CDVPlugin <ADBannerViewDelegate> {
-
 	ADBannerView* adView;
-	
 	BOOL bannerIsVisible;
 	BOOL bannerIsInitialized;
-	BOOL bannerIsAtBottom;
+
+	// Value set by the javascript to indicate whether the ad is to be positioned
+	// at the top or bottom of the screen.
+	BOOL bannerAtTop;
 }
 
-@property (nonatomic, retain)	ADBannerView* adView;
-@property (assign)				BOOL bannerIsVisible;
-@property (assign)				BOOL bannerIsInitialized;
-@property (assign)				BOOL bannerIsAtBottom;
-@property (assign)				BOOL isLandscape;
+@property (nonatomic, retain) ADBannerView* adView;
+@property (assign) BOOL bannerIsVisible;
+@property (assign) BOOL bannerIsInitialized;
+@property (assign) BOOL bannerAtTop;
+@property (assign) BOOL isLandscape;
 
-
-- (void) prepare:(CDVInvokedUrlCommand *)command
+- (void) createBannerView:(CDVInvokedUrlCommand *)command
 - (void) showAd:(CDVInvokedUrlCommand *)command
 
 @end
