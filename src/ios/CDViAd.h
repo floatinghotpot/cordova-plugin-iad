@@ -30,6 +30,5 @@
 
 - (void) prepare:(CDVInvokedUrlCommand *)command
 - (void) showAd:(CDVInvokedUrlCommand *)command
-- (void) orientationChanged:(CDVInvokedUrlCommand *)command
 
 @end

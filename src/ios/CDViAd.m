@@ -27,69 +27,20 @@
 #pragma mark -
 #pragma mark Public Methods
 
-- (void) resizeViews
-{
-    Class adBannerViewClass = NSClassFromString(@"ADBannerView");
-	if (adBannerViewClass && self.adView) {
-        CGRect webViewFrame = [super webView].frame;
-        CGRect superViewFrame = [[super webView] superview].frame;
-        CGRect adViewFrame = self.adView.frame;
-        
-        BOOL adIsShowing = [[[super webView] superview].subviews containsObject:self.adView];
-        if (adIsShowing) {
-            if (self.bannerIsAtBottom) {
-                webViewFrame.origin.y = 0;
-                CGRect adViewFrame = self.adView.frame;
-                CGRect superViewFrame = [[super webView] superview].frame;
-                adViewFrame.origin.y = (self.isLandscape ? superViewFrame.size.width : superViewFrame.size.height) - adViewFrame.size.height;
-                self.adView.frame = adViewFrame;
-            } else {
-                webViewFrame.origin.y = adViewFrame.size.height;
-            }
-            
-            webViewFrame.size.height = self.isLandscape? (superViewFrame.size.width - adViewFrame.size.height) : (superViewFrame.size.height - adViewFrame.size.height);
-        } else {
-            webViewFrame.size = self.isLandscape? CGSizeMake(superViewFrame.size.height, superViewFrame.size.width) : superViewFrame.size;
-            webViewFrame.origin = CGPointZero;
-        }
-        
-        [UIView beginAnimations:@"blah" context:NULL];
-        [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-        
-        [super webView].frame = webViewFrame;
-        
-        [UIView commitAnimations];
-    }
-}
-
-- (void) orientationChanged:(CDVInvokedUrlCommand *)command
-{
-    CDVPluginResult *pluginResult;
-    NSString *callbackId = command.callbackId;
-    NSArray* arguments = command.arguments;
-
-    NSInteger orientation = [[arguments objectAtIndex:0] integerValue];
-
-    switch (orientation) {
-        // landscape
-        case 90:
-        case -90:
-            self.isLandscape = YES;
-            break;
-        // portrait
-        case 0:
-        case 180:
-            self.isLandscape = NO;
-            break;
-        default:
-            break;
-    }
-    
-    Class adBannerViewClass = NSClassFromString(@"ADBannerView");
-    if (adBannerViewClass && self.adView) {
-        self.adView.currentContentSizeIdentifier = self.isLandscape ? ADBannerContentSizeIdentifierLandscape : ADBannerContentSizeIdentifierPortrait;
-        [self resizeViews];
-    }
+- (CDVPlugin *)initWithWebView:(UIWebView *)theWebView {
+  self = (CDVAdMob *)[super initWithWebView:theWebView];
+  if (self) {
+    // These notifications are required for re-placing the ad on orientation
+    // changes. Start listening for notifications here since we need to
+    // translate the Smart Banner constants according to the orientation.
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(deviceOrientationChange:)
+               name:UIDeviceOrientationDidChangeNotification
+             object:nil];
+  }
+  return self;
 }
 
 - (void) prepare:(CDVInvokedUrlCommand *)command
@@ -102,9 +53,14 @@
 	if (argc > 1) {
 		return;
 	}
-    
+
+	BOOL atBottom = NO;
 	NSString* atBottomValue = [arguments objectAtIndex:0];
-	[self __prepare:[atBottomValue boolValue]];
+	if( atBottomValue ) atBottom = [atBottomValue boolValue];
+	[self __prepare:atBottom];
+
+	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+	[self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
 }
 
 - (void) showAd:(CDVInvokedUrlCommand *)command
@@ -117,9 +73,68 @@
 	if (argc > 1) {
 		return;
 	}
-	
+
+	BOOL show = YES;
 	NSString* showValue = [arguments objectAtIndex:0];
-	[self __showAd:[showValue boolValue]];
+	if( showValue ) show = [showValue boolValue];
+	[self __showAd:show];
+
+	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+	[self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
+}
+
+- (void)deviceOrientationChange:(NSNotification *)notification {
+
+    Class adBannerViewClass = NSClassFromString(@"ADBannerView");
+    if (adBannerViewClass && self.adView) {
+
+		UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
+
+		if( UIInterfaceOrientationIsLandscape( currentOrientation ) ) {
+			self.isLandscape = YES;
+			self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierLandscape;
+		} else {
+			self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierPortrait;
+		}
+
+		[self resizeViews];
+    }
+}
+
+- (void) resizeViews
+{
+    Class adBannerViewClass = NSClassFromString(@"ADBannerView");
+	if (adBannerViewClass && self.adView) {
+
+        CGRect webViewFrame = [super webView].frame;
+        CGRect superViewFrame = [[super webView] superview].frame;
+        CGRect adViewFrame = self.adView.frame;
+
+        BOOL adIsShowing = [[[super webView] superview].subviews containsObject:self.adView];
+        if (adIsShowing) {
+            if (self.bannerIsAtBottom) {
+                webViewFrame.origin.y = 0;
+                CGRect adViewFrame = self.adView.frame;
+                CGRect superViewFrame = [[super webView] superview].frame;
+                adViewFrame.origin.y = (self.isLandscape ? superViewFrame.size.width : superViewFrame.size.height) - adViewFrame.size.height;
+                self.adView.frame = adViewFrame;
+            } else {
+                webViewFrame.origin.y = adViewFrame.size.height;
+            }
+
+            webViewFrame.size.height = self.isLandscape? (superViewFrame.size.width - adViewFrame.size.height) : (superViewFrame.size.height - adViewFrame.size.height);
+        } else {
+            webViewFrame.size = self.isLandscape? CGSizeMake(superViewFrame.size.height, superViewFrame.size.width) : superViewFrame.size;
+            webViewFrame.origin = CGPointZero;
+        }
+
+        [UIView beginAnimations:@"blah" context:NULL];
+        [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+
+        [super webView].frame = webViewFrame;
+
+        [UIView commitAnimations];
+    }
 }
 
 #pragma mark -
@@ -221,6 +236,17 @@
 		
 		[super writeJavascript:[NSString stringWithFormat:jsString, [error description]]];
     }
+}
+
+- (void)dealloc {
+	[[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+	[[NSNotificationCenter defaultCenter]
+		removeObserver:self
+		name:UIDeviceOrientationDidChangeNotification
+		object:nil];
+
+	self.adView.delegate = nil;
+	self.adView = nil;
 }
 
 @end
