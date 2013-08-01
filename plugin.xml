@@ -3,7 +3,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
            id="org.apache.cordova.plugin.iad"
       version="0.1.0">
-    <name>PayPalMPL</name>
+    <name>iAd</name>
 
     <js-module src="www/iAd.js" name="iAd">
         <clobbers target="window.plugins.iAd" />
@@ -21,6 +21,7 @@
          <source-file src="src/ios/CDViAd.m" />
 
  	     <framework src="AdSupport.framework" />
+ 	     <framework src="iAd.framework" weak="true"/>
 	</platform>
           
 </plugin>

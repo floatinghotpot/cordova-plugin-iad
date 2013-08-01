@@ -11,7 +11,7 @@
 #import <Cordova/CDVDebug.h>
 
 
-@interface CDViAd(PrivateMethods)
+@interface CDViAd()
 
 - (void) __prepare:(BOOL)atTop;
 - (void) __showAd:(BOOL)show;
@@ -28,7 +28,7 @@
 #pragma mark Public Methods
 
 - (CDVPlugin *)initWithWebView:(UIWebView *)theWebView {
-  self = (CDVAdMob *)[super initWithWebView:theWebView];
+  self = (CDViAd *)[super initWithWebView:theWebView];
   if (self) {
     // These notifications are required for re-placing the ad on orientation
     // changes. Start listening for notifications here since we need to
@@ -126,12 +126,14 @@
             webViewFrame.origin = CGPointZero;
         }
 
-        [UIView beginAnimations:@"blah" context:NULL];
-        [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+        //[UIView beginAnimations:@"blah" context:NULL];
+        //[UIView setAnimationDuration:0.5];
+        //[self.adView setAlpha:1.0];
+        //[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
 
         [super webView].frame = webViewFrame;
 
-        [UIView commitAnimations];
+        //[UIView commitAnimations];
     }
 }
 
@@ -144,7 +146,7 @@
 	
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
 	if (adBannerViewClass && !self.adView) {
-		ADBannerView *self.adView = [[ADBannerView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
+		self.adView = [[ADBannerView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
 		self.adView.requiredContentSizeIdentifiers = [NSSet setWithObjects: ADBannerContentSizeIdentifierPortrait, ADBannerContentSizeIdentifierLandscape, nil];		
 
 		UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
@@ -157,11 +159,16 @@
 		}
 
 		self.adView.delegate = self;
-		[self.view addSubview:self.adView];
+        self.adView.backgroundColor = [UIColor blackColor];
+		[self.webView.superview addSubview:self.adView];
 
+        self.webView.superview.backgroundColor = [UIColor blackColor];
+        
 		self.bannerAtTop = atTop;
 		self.bannerIsVisible = NO;
 		self.bannerIsInitialized = YES;
+        
+        [self resizeViews];
 	}
 }
 
@@ -182,24 +189,28 @@
 	}
 	
 	if (show) {
-		[UIView beginAnimations:@"blah" context:NULL];
-		[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+		//[UIView beginAnimations:@"blah" context:NULL];
+        //[UIView setAnimationDuration:0.5];
+        //[self.adView setAlpha:1.0];
+		//[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
 
 		[[[super webView] superview] addSubview:self.adView];
 		[[[super webView] superview] bringSubviewToFront:self.adView];
         [self resizeViews];
 		
-		[UIView commitAnimations];
+		//[UIView commitAnimations];
 
 		self.bannerIsVisible = YES;
 	} else {
-		[UIView beginAnimations:@"blah" context:NULL];
-		[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+		//[UIView beginAnimations:@"blah" context:NULL];
+        //[UIView setAnimationDuration:0.5];
+        //[self.adView setAlpha:0.0];
+        //[UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
 		
 		[self.adView removeFromSuperview];
         [self resizeViews];
 		
-		[UIView commitAnimations];
+		//[UIView commitAnimations];
 		
 		self.bannerIsVisible = NO;
 	}
@@ -211,14 +222,24 @@
 
 - (BOOL)bannerViewActionShouldBegin:(ADBannerView *)banner willLeaveApplication:(BOOL)willLeave
 {
-    NSLog(@"Banner view is beginning an ad action");
+    NSLog(@"Banner view begining action");
+
+    [self writeJavascript:@"cordova.fireDocumentEvent('onClickAd');"];
     if (!willLeave) {
-    	[self writeJavascript:@"cordova.fireDocumentEvent('onClickAd');"];
+        
     }
     return YES;
 }
+
+- (void)bannerViewActionDidFinish:(ADBannerView *)banner
+{
+    NSLog(@"Banner view finished action");
+}
+
 - (void)bannerViewDidLoadAd:(ADBannerView *)banner
 {
+    NSLog(@"Banner Ad loaded");
+    
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
     if (adBannerViewClass) {
 		if (!self.bannerIsVisible) {
@@ -231,11 +252,13 @@
 
 - (void)bannerView:(ADBannerView *)banner didFailToReceiveAdWithError:(NSError*)error
 {
+    NSLog(@"Banner failed to load Ad");
+
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
     if (adBannerViewClass) {
-		if ( self.bannerIsVisible ) {
-			[self __showAd:NO];
-		}
+		//if ( self.bannerIsVisible ) {
+		//	[self __showAd:NO];
+		//}
 
 		NSString *jsString =
 			@"cordova.fireDocumentEvent('onFailedToReceiveAd',"

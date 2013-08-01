@@ -8,18 +8,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <iAd/iAd.h>
 #import <Cordova/CDVPlugin.h>
-#import "CDViAd.h"
+#import <iAd/iAd.h>
 
 @interface CDViAd : CDVPlugin <ADBannerViewDelegate> {
-	ADBannerView* adView;
-	BOOL bannerIsVisible;
-	BOOL bannerIsInitialized;
 
-	// Value set by the javascript to indicate whether the ad is to be positioned
-	// at the top or bottom of the screen.
-	BOOL bannerAtTop;
 }
 
 @property (nonatomic, retain) ADBannerView* adView;
@@ -28,7 +21,7 @@
 @property (assign) BOOL bannerAtTop;
 @property (assign) BOOL isLandscape;
 
-- (void) createBannerView:(CDVInvokedUrlCommand *)command
-- (void) showAd:(CDVInvokedUrlCommand *)command
+- (void) createBannerView:(CDVInvokedUrlCommand *)command;
+- (void) showAd:(CDVInvokedUrlCommand *)command;
 
 @end
