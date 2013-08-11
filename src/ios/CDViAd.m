@@ -160,7 +160,7 @@
 
 		self.adView.delegate = self;
         self.adView.backgroundColor = [UIColor blackColor];
-		[self.webView.superview addSubview:self.adView];
+		//[self.webView.superview addSubview:self.adView];
 
         self.webView.superview.backgroundColor = [UIColor blackColor];
         
