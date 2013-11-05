@@ -6,7 +6,7 @@
       version="0.1.0">
       
     <name>iAd</name>
-	<description>Apple iAd support</description>
+	<description>Apple iAd support (iOS only)</description>
 	<author>Liming Xie</author>
 	<license>MIT</license>    
 	<engines>
