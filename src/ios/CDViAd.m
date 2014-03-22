@@ -267,6 +267,23 @@
     }
 }
 
+- (void)deviceOrientationChange:(NSNotification *)notification{
+    UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
+    Class adBannerViewClass = NSClassFromString(@"ADBannerView");
+    if (adBannerViewClass && self.adView) {
+
+        if( UIInterfaceOrientationIsLandscape( currentOrientation ) ) {
+            self.isLandscape = YES;
+            self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierLandscape;
+        } else {
+            self.isLandscape = NO;
+            self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierPortrait;
+        }
+
+        [self resizeViews];
+    }
+}
+
 - (void)dealloc {
 	[[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
 	[[NSNotificationCenter defaultCenter]
