@@ -15,7 +15,7 @@
 
 - (void) __prepare:(BOOL)atTop;
 - (void) __showAd:(BOOL)show;
-- (void) __isLandscape;
+- (bool) __isLandscape;
 
 @end
 
