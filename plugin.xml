@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 	xmlns:android="http://schemas.android.com/apk/res/android"
            id="com.rjfun.cordova.plugin.iad"
-      version="0.1.1">
+      version="0.1.2">
       
     <name>iAd</name>
 	<description>Apple iAd support (iOS only)</description>
