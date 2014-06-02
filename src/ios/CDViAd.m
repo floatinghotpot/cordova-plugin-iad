@@ -15,6 +15,7 @@
 
 - (void) __prepare:(BOOL)atTop;
 - (void) __showAd:(BOOL)show;
+- (void) __isLandscape;
 
 @end
 
@@ -149,8 +150,9 @@
 		self.adView = [[ADBannerView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
 		self.adView.requiredContentSizeIdentifiers = [NSSet setWithObjects: ADBannerContentSizeIdentifierPortrait, ADBannerContentSizeIdentifierLandscape, nil];		
 
-		UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
-		if( UIInterfaceOrientationIsLandscape( currentOrientation ) ) {
+		//UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
+		//if( UIInterfaceOrientationIsLandscape( currentOrientation ) ) {
+        if( [self __isLandscape] ) {
 			self.isLandscape = YES;
 	        self.adView.currentContentSizeIdentifier = ADBannerContentSizeIdentifierLandscape;
 		} else {
@@ -215,6 +217,27 @@
 		self.bannerIsVisible = NO;
 	}
 	
+}
+
+- (bool)__isLandscape {
+    bool landscape = NO;
+    
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait:
+        case UIInterfaceOrientationPortraitUpsideDown:
+            landscape = NO;
+            break;
+        case UIInterfaceOrientationLandscapeLeft:
+        case UIInterfaceOrientationLandscapeRight:
+            landscape = YES;
+            break;
+        default:
+            landscape = YES;
+            break;
+    }
+    
+    return landscape;
 }
 
 #pragma mark -
