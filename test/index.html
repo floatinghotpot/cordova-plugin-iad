@@ -1,156 +1,73 @@
 <!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no;" />
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <title>Hello World</title>
+        <script type="text/javascript" src="cordova.js"></script>
+    </head>
+    <body onload="onLoad()">
+    <script>
+    function onLoad() {
+    	document.addEventListener("deviceready", onDeviceReady, false);
 
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-
-	<!-- iPad/iPhone specific css below, add after your main css >
-	<link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="ipad.css" type="text/css" />		
-	<link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="iphone.css" type="text/css" />		
-	-->
-	<!-- If you application is targeting iOS BEFORE 4.0 you MUST put json2.js from http://www.JSON.org/json2.js into your www directory and include it here -->
-	
-        <script type="text/javascript" charset="utf-8" src="cordova-1.5.0.js"></script>
-    	<script type="text/javascript" charset="utf-8" src="iAd"></script>
-        
-    <script type="text/javascript" charset="utf-8">
-
-        // If you want to prevent dragging, uncomment this section
-        /*
-         function preventBehavior(e) 
-         { 
-         e.preventDefault(); 
-         };
-         document.addEventListener("touchmove", preventBehavior, false);
-         */
-        
-        var gLastAdLoadedDate = null;
-        var gTotalAdsLoaded = 0;
-        var gTimerId = null;
-        
-        function onBodyLoad()
-        {
-            document.addEventListener("deviceready", onDeviceReady,false);
-        }
-        
-        function onOrientationChange()
-        {
-            //alert(window.orientation);
-        }
-        
-        /* When this function is called, PhoneGap has been initialized and is ready to roll */
-        function onDeviceReady()
-        {
-            // listen for orientation changes
-            window.addEventListener("orientationchange", window.plugins.iAd.orientationChanged, false);
-            // listen for the "iAdBannerViewDidLoadAdEvent" that is sent by the iAd
-            document.addEventListener("iAdBannerViewDidLoadAdEvent", iAdBannerViewDidLoadAdEventHandler, false);
-            // listen for the "iAdBannerViewDidFailToReceiveAdWithErrorEvent" that is sent by the iAd
-            document.addEventListener("iAdBannerViewDidFailToReceiveAdWithErrorEvent", iAdBannerViewDidFailToReceiveAdWithErrorEventHandler, false);
-            
-            var adAtBottom = false; 
-            setTimeout(function() {
-                       window.plugins.iAd.prepare(adAtBottom); // by default, ad is at Top
-                       }, 1000);
-                       window.plugins.iAd.orientationChanged(true);//trigger immediately so iAd knows its orientation on first load
-        }
-		
-        function iAdBannerViewDidFailToReceiveAdWithErrorEventHandler(evt)
-        {
-            alert(evt.error);
-            window.plugins.iAd.showAd(false);
-            var elem = document.getElementById("showAd");
-            elem.checked = false;
-        }
-        
-        function iAdBannerViewDidLoadAdEventHandler(evt)
-        {
-            // if we got this event, a new ad is loaded
-            var elem = document.getElementById("lastAdLoaded");
-            gLastAdLoadedDate = new Date();
-            elem.innerHTML = gLastAdLoadedDate.toLocaleString();
-            
-            elem = document.getElementById("showAd");
-            elem.disabled = false;
-            elem.checked = true;
-            window.plugins.iAd.showAd(true);
-            
-            gTotalAdsLoaded++;
-            
-            elem = document.getElementById("totalAdsLoaded");
-            elem.innerHTML = gTotalAdsLoaded.toString();
-            
-            if (gTimerId) {
-                clearInterval(gTimerId);
-            }
-            gTimerId = setInterval(lastAdLoadedInterval, 1000);
-            
-        }
-        
-        function lastAdLoadedInterval()
-        {
-            var now = (new Date()).getTime();
-            var diff = now - gLastAdLoadedDate.getTime();
-            var elem = document.getElementById("lastAdLoaded");
-            
-            var ms_in_a_year = 31449600000; /* 1000ms x 60s x 60m x 24hrs x 7d x 52w */
-            var ms_in_a_week = 604800000; /* 1000ms x 60s x 60m x 24hrs * 7d */
-            var ms_in_a_day = 86400000; /* 1000ms x 60s x 60m x 24hrs */
-            var ms_in_an_hour = 3600000; /* 1000ms x 60s x 60m */ 
-            var ms_in_a_minute = 60000; /* 1000ms x 60s */ 
-            var ms_in_a_second = 1000;		
-            
-            var milliseconds = Math.floor(diff);
-            var seconds = Math.floor(milliseconds / ms_in_a_second) % 60;
-            var minutes = Math.floor(milliseconds / ms_in_a_minute) % 60;
-            var hours = Math.floor(milliseconds / ms_in_an_hour) % 24;
-            var days = Math.floor(milliseconds / ms_in_a_day) % 7;
-            var weeks = Math.floor(milliseconds / ms_in_a_week) % 52;
-            var years = Math.floor(milliseconds / ms_in_a_year);
-            
-            var caption = seconds + "s ago";
-            
-            if (minutes > 0) {
-                caption = minutes + "m " + caption;
-            }
-            if (hours > 0) {
-                caption = hours + "h " + caption;
-            } 
-            if (days > 0) {
-                caption = days + "d " + caption;
-            } 
-            if (weeks > 0) {
-                caption = weeks + "w " + caption;
-            } 
-            if (years > 0) {
-                caption = years + "yr " + caption;
-            } 
-            
-            elem.innerHTML = caption;
-        }
-        
-        function showAdClicked(evt)
-        {
-            window.plugins.iAd.showAd(evt.checked);
-        }
-	    
+    	document.addEventListener("onClickAd", onClickAd, false);
+    	document.addEventListener("onReceiveAd", onReceiveAd, false);
+    	document.addEventListener("onFailedToReceiveAd", onFailedToReceiveAd, false);
+    }
+    function onDeviceReady() {
+    	if ( window.plugins && window.plugins.iAd ) {
+    	    window.plugins.iAd.createBannerView( 
+    	    		{
+    		            'bannerAtTop': true
+    	            }, function() {
+    	            	window.plugins.iAd.showAd( true );
+    	            }, function(){
+    	            	alert( "failed to create ad view" );
+    	            });
+    	} else {
+    		alert('iAd plugin not available/ready.');
+    	}
+    }
+    function onClickAd() {
+		// count click    	
+    }
+    function onReceiveAd() {
+    	// do whatever you want 
+    }
+    function onFailedToReceiveAd( ret ) {
+    	alert( ret.error );
+    }
+    function showAd( bshow ) {
+    	if ( window.plugins && window.plugins.iAd ) {
+    	    window.plugins.iAd.showAd( bshow );
+    	} else {
+    		alert('iAd plugin not available/ready.');
+    	} 
+    }
     </script>
-  </head>
-    <body style="margin:0; padding:0;border:1px solid blue;" onload="onBodyLoad()">
-        <span style="position:absolute; top:0;">
-            This is some text at the top of the webview.
-        </span>
-        <br /><br />
-        <form>
-            <input type="checkbox" id="showAd" name="showAd" disabled="disabled" onclick="showAdClicked(this);">Show iAd</input><br />
-            <br />
-            <span>New Ad Loaded: <span id="lastAdLoaded">Waiting.</span></span><br />
-            <span>Total Ads Loaded: <span id="totalAdsLoaded">None.</span></span>
-        </form>
-        <br />
-        <span style="position:absolute;bottom:0">
-            This is some text at the bottom of the webview.
-        </span>
+    
+    <p><button onclick="showAd(true);">show Ad</button></p>
+    <p><button onclick="showAd(false);">hide Ad</button></p>
+    
     </body>
 </html>
