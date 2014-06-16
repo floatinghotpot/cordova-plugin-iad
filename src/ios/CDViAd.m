@@ -144,7 +144,7 @@
                 webViewFrameNew.origin.y = top + bannerViewFrame.size.height;
             } else {
                 // move web view to top
-                webViewFrameNew.origin.y = top;
+                webViewFrameNew.origin.y = 0;
                 // move the banner view to below
                 bannerViewFrameNew.origin.y = superViewFrameNew.size.height - bannerViewFrame.size.height;
             }
