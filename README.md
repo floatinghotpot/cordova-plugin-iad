@@ -5,8 +5,8 @@ This is the Cordova Plugin to support Apple iAd on iOS. It provides a way to req
 ## See Also ##
 ---------------------------
 Besides using Apple iAd, you have some other options, all working on cordova:
-* [cordova-plugin-flurry](../cordova-plugin-flurry), Flurry Ad service. 
-* [cordova-plugin-admob](../cordova-plugin-admob), Google AdMob service.
+* [cordova-plugin-flurry](https://github.com/floatinghotpot/cordova-plugin-flurry), Flurry Ad service. 
+* [cordova-plugin-admob](https://github.com/floatinghotpot/cordova-plugin-admob), Google AdMob service.
 
 ## How to use ##
 
