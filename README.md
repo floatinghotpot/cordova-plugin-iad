@@ -63,6 +63,6 @@ You can use this cordova plugin for free.
 To support this project, donation is welcome.
 
 Donation can be accepted via Paypal:
-* [http://floatinghotpot.github.io/#donate](Donate directly via Paypal)
+* [Donate directly via Paypal](http://floatinghotpot.github.io/#donate)
 
 
