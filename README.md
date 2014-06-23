@@ -56,10 +56,13 @@ Use Cordova/Phonegap command line tool:
     	alert( ret.error );
     }
 
-## Related ##
+## Donate ##
+----------------------------------------------
+You can use this cordova plugin for free. 
 
-It's for iOS only. If you are writing App for Android/iOS, may try this cordova plugin:
+To support this project, donation is welcome.
 
-    https://github.com/floatinghotpot/cordova-plugin-admob.git
-    
-    
+Donation can be accepted via Paypal:
+* [http://floatinghotpot.github.io/#donate](Donate directly via Paypal)
+
+
