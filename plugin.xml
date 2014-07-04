@@ -6,9 +6,13 @@
       version="0.1.3">
       
     <name>iAd</name>
-	<description>Apple iAd support (iOS only)</description>
+	<description>Apple iAd support (iOS only) to your cordova apps or games to earn more revenue</description>
 	<author>Liming Xie</author>
 	<license>MIT</license>    
+<keywords>ad,iad</keywords>
+    <repo>https://github.com/floatinghotpot/cordova-plugin-iad.git</repo>
+    <issue>https://github.com/floatinghotpot/cordova-plugin-iad/issues</issue>
+
 	<engines>
 	    <engine name="cordova" version=">=3.0" />
 	</engines>
