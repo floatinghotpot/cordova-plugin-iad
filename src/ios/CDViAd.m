@@ -13,7 +13,7 @@
 
 @interface CDViAd()
 
-- (void) __prepare:(BOOL)atTop;
+- (void) __prepare:(BOOL)atTop overlap:(BOOL)isOverlap;
 - (void) __showAd:(BOOL)show;
 - (bool) __isLandscape;
 
@@ -23,25 +23,25 @@
 @implementation CDViAd
 
 @synthesize bannerView;
-@synthesize bannerIsVisible, bannerIsInitialized, bannerAtTop;
+@synthesize bannerIsVisible, bannerIsInitialized, bannerAtTop, bannerOverlap;
 
 #pragma mark -
 #pragma mark Public Methods
 
 - (CDVPlugin *)initWithWebView:(UIWebView *)theWebView {
-    self = (CDViAd *)[super initWithWebView:theWebView];
-    if (self) {
-        // These notifications are required for re-placing the ad on orientation
-        // changes. Start listening for notifications here since we need to
-        // translate the Smart Banner constants according to the orientation.
-        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-        [[NSNotificationCenter defaultCenter]
-         addObserver:self
-         selector:@selector(deviceOrientationChange:)
-         name:UIDeviceOrientationDidChangeNotification
-         object:nil];
-    }
-    return self;
+  self = (CDViAd *)[super initWithWebView:theWebView];
+  if (self) {
+    // These notifications are required for re-placing the ad on orientation
+    // changes. Start listening for notifications here since we need to
+    // translate the Smart Banner constants according to the orientation.
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(deviceOrientationChange:)
+               name:UIDeviceOrientationDidChangeNotification
+             object:nil];
+  }
+  return self;
 }
 
 - (void) createBannerView:(CDVInvokedUrlCommand *)command
@@ -49,18 +49,27 @@
     CDVPluginResult *pluginResult;
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
-    
+
 	NSUInteger argc = [arguments count];
-	if (argc > 1) {
-		return;
-	}
+	if (argc >= 2) {
+        NSString* atTopValue = [arguments objectAtIndex:0];
+        BOOL atTop = atTopValue ? [atTopValue boolValue] : NO;
+        
+        NSString* overlapValue = [arguments objectAtIndex:1];
+        BOOL isOverlap = overlapValue ? [overlapValue boolValue] : NO;
+        
+        [self __prepare:atTop overlap:isOverlap];
+        
+        // set background color to black
+        //self.webView.superview.backgroundColor = [UIColor blackColor];
+        //self.webView.superview.tintColor = [UIColor whiteColor];
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
     
-	BOOL atTop = NO;
-	NSString* atTopValue = [arguments objectAtIndex:0];
-	if( atTopValue ) atTop = [atTopValue boolValue];
-	[self __prepare:atTop];
-    
-	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 	[self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
 }
 
@@ -69,18 +78,18 @@
     CDVPluginResult *pluginResult;
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
-    
+
 	NSUInteger argc = [arguments count];
-	if (argc > 1) {
-		return;
-	}
+	if (argc >= 1) {
+        NSString* showValue = [arguments objectAtIndex:0];
+        BOOL show = showValue ? [showValue boolValue] : YES;
+        [self __showAd:show];
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
     
-	BOOL show = YES;
-	NSString* showValue = [arguments objectAtIndex:0];
-	if( showValue ) show = [showValue boolValue];
-	[self __showAd:show];
-    
-	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 	[self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
 }
 
@@ -105,32 +114,30 @@
 
 - (void) resizeViews
 {
+    // Frame of the main container view that holds the Cordova webview.
+    CGRect superViewFrame = self.webView.superview.frame;
+    // Frame of the main Cordova webview.
+    CGRect webViewFrame = self.webView.frame;
+
+    // Let's calculate the new position and size
+    CGRect superViewFrameNew = superViewFrame;
+    CGRect webViewFrameNew = webViewFrame;
+
+    // Handle changing Smart Banner constants for the user.
+    bool isLandscape = [self __isLandscape];
+    if( isLandscape ) {
+        superViewFrameNew.size.width = superViewFrame.size.height;
+        superViewFrameNew.size.height = superViewFrame.size.width;
+    }
+    
     Class adBannerViewClass = NSClassFromString(@"ADBannerView");
 	if (adBannerViewClass && self.bannerView) {
-        
-        // If the ad is not showing or the ad is hidden, we don't want to resize anything.
-        BOOL adIsShowing = [self.webView.superview.subviews containsObject:self.bannerView] &&
-        (! self.bannerView.hidden);
-        
-        // Handle changing Smart Banner constants for the user.
-        bool isLandscape = [self __isLandscape];
-        
-        // Frame of the main container view that holds the Cordova webview.
-        CGRect superViewFrame = self.webView.superview.frame;
-        // Frame of the main Cordova webview.
-        CGRect webViewFrame = self.webView.frame;
         CGRect bannerViewFrame = self.bannerView.frame;
-        
-        // Let's calculate the new position and size
-        CGRect superViewFrameNew = superViewFrame;
-        CGRect webViewFrameNew = webViewFrame;
         CGRect bannerViewFrameNew = bannerViewFrame;
         
-        if( isLandscape ) {
-            superViewFrameNew.size.width = superViewFrame.size.height;
-            superViewFrameNew.size.height = superViewFrame.size.width;
-        }
-        
+        // If the ad is not showing or the ad is hidden, we don't want to resize anything.
+        UIView* parentView = self.bannerOverlap ? self.webView : [self.webView superview];
+        BOOL adIsShowing = [parentView.subviews containsObject:self.bannerView] && (! self.bannerView.hidden);
         if(adIsShowing) {
             if(self.bannerAtTop) {
                 // iOS7 Hack, handle the Statusbar
@@ -140,40 +147,51 @@
                 
                 // move banner view to top
                 bannerViewFrameNew.origin.y = top;
-                // move the web view to below
-                webViewFrameNew.origin.y = top + bannerViewFrame.size.height;
+                
+                if(! bannerOverlap) {
+                    // move the web view to below
+                    webViewFrameNew.origin.y = bannerViewFrameNew.origin.y + bannerViewFrame.size.height;
+                    webViewFrameNew.size.height = superViewFrameNew.size.height - webViewFrameNew.origin.y;
+                }
             } else {
-                // move the banner view to below
                 bannerViewFrameNew.origin.y = superViewFrameNew.size.height - bannerViewFrame.size.height;
+                
+                if(! bannerOverlap) {
+                    // move the banner view to below
+                    webViewFrameNew.origin.y = 0;
+                    webViewFrameNew.size.height = superViewFrameNew.size.height - bannerViewFrame.size.height;
+                }
             }
             
             webViewFrameNew.size.width = superViewFrameNew.size.width;
-            webViewFrameNew.size.height = superViewFrameNew.size.height - webViewFrameNew.origin.y;
-            
             bannerViewFrameNew.origin.x = (superViewFrameNew.size.width - bannerViewFrameNew.size.width) * 0.5f;
-            
-            NSLog(@"webview: %d x %d, banner view: %d x %d",
-                  (int) webViewFrameNew.size.width, (int) webViewFrameNew.size.height,
-                  (int) bannerViewFrameNew.size.width, (int) bannerViewFrameNew.size.height );
             
             self.bannerView.frame = bannerViewFrameNew;
             
+            NSLog(@"x,y,w,h = %d,%d,%d,%d",
+                  (int) bannerViewFrameNew.origin.x, (int) bannerViewFrameNew.origin.y,
+                  (int) bannerViewFrameNew.size.width, (int) bannerViewFrameNew.size.height );
+            
+            
         } else {
             webViewFrameNew = superViewFrameNew;
-            
-            NSLog(@"webview: %d x %d",
-                  (int) webViewFrameNew.size.width, (int) webViewFrameNew.size.height );
-            
         }
         
         self.webView.frame = webViewFrameNew;
+        
+    } else {
+        self.webView.frame = superViewFrameNew;
     }
+
+    NSLog(@"superview: %d x %d, webview: %d x %d",
+          (int) superViewFrameNew.size.width, (int) superViewFrameNew.size.height,
+          (int) webViewFrameNew.size.width, (int) webViewFrameNew.size.height );
 }
 
 #pragma mark -
 #pragma mark Private Methods
 
-- (void) __prepare:(BOOL)atTop
+- (void) __prepare:(BOOL)atTop overlap:(BOOL)isOverlap
 {
 	NSLog(@"CDViAd Prepare Ad, bannerAtTop: %d", atTop);
 	
@@ -194,12 +212,13 @@
         NSLog(@"x,y,w,h = %d,%d,%d,%d",
               (int) adViewFrameNew.origin.x, (int) adViewFrameNew.origin.y,
               (int) adViewFrameNew.size.width, (int) adViewFrameNew.size.height );
-        
+
 		self.bannerView.delegate = self;
         
 		self.bannerAtTop = atTop;
-		self.bannerIsVisible = NO;
+        self.bannerOverlap = isOverlap;
 		self.bannerIsInitialized = YES;
+		self.bannerIsVisible = NO;
         
         [self resizeViews];
 	}
@@ -210,7 +229,7 @@
 	NSLog(@"CDViAd Show Ad: %d", show);
 	
 	if (!self.bannerIsInitialized){
-		[self __prepare:NO];
+		[self __prepare:NO overlap:NO];
 	}
 	
 	if (!(NSClassFromString(@"ADBannerView") && self.bannerView)) { // ad classes not available
@@ -222,8 +241,9 @@
             [self resizeViews];
         }
 	} else if (show) {
-		[[[super webView] superview] addSubview:self.bannerView];
-		[[[super webView] superview] bringSubviewToFront:self.bannerView];
+        UIView* parentView = self.bannerOverlap ? self.webView : [self.webView superview];
+        [parentView addSubview:self.bannerView];
+        [parentView bringSubviewToFront:self.bannerView];
         [self resizeViews];
 		
 		self.bannerIsVisible = YES;
@@ -268,7 +288,7 @@
 - (BOOL)bannerViewActionShouldBegin:(ADBannerView *)banner willLeaveApplication:(BOOL)willLeave
 {
     NSLog(@"Banner view begining action");
-    
+
     [self writeJavascript:@"cordova.fireDocumentEvent('onClickAd');"];
     if (!willLeave) {
         
@@ -290,7 +310,7 @@
 		if (!self.bannerIsVisible) {
 			[self __showAd:YES];
 		}
-        
+
 		[self writeJavascript:@"cordova.fireDocumentEvent('onReceiveAd');"];
     }
 }
@@ -298,16 +318,16 @@
 - (void)bannerView:(ADBannerView *)banner didFailToReceiveAdWithError:(NSError*)error
 {
     NSLog(@"Banner failed to load Ad");
-    
+
 	Class adBannerViewClass = NSClassFromString(@"ADBannerView");
     if (adBannerViewClass) {
-		//if ( self.bannerIsVisible ) {
-		//	[self __showAd:NO];
-		//}
-        
+		if ( self.bannerIsVisible ) {
+			[self __showAd:NO];
+		}
+
 		NSString *jsString =
-        @"cordova.fireDocumentEvent('onFailedToReceiveAd',"
-        @"{ 'error': '%@' });";
+			@"cordova.fireDocumentEvent('onFailedToReceiveAd',"
+			@"{ 'error': '%@' });";
 		[self writeJavascript:[NSString stringWithFormat:jsString, [error description]]];
     }
 }
@@ -315,7 +335,7 @@
 - (void)deviceOrientationChange:(NSNotification *)notification{
     Class adBannerViewClass = NSClassFromString(@"ADBannerView");
     if (adBannerViewClass && self.bannerView) {
-        
+
         CGRect superViewFrame = self.webView.superview.frame;
         if([self __isLandscape]) {
             superViewFrame.size.width = self.webView.superview.frame.size.height;
@@ -325,7 +345,7 @@
         CGRect adViewFrameNew = self.bannerView.frame;
         adViewFrameNew.size = [self.bannerView sizeThatFits:superViewFrame.size];
         self.bannerView.frame = adViewFrameNew;
-        
+
         [self resizeViews];
     }
 }
@@ -333,10 +353,10 @@
 - (void)dealloc {
 	[[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
 	[[NSNotificationCenter defaultCenter]
-     removeObserver:self
-     name:UIDeviceOrientationDidChangeNotification
-     object:nil];
-    
+		removeObserver:self
+		name:UIDeviceOrientationDidChangeNotification
+		object:nil];
+
 	self.bannerView.delegate = nil;
 	self.bannerView = nil;
 }
