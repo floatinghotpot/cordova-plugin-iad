@@ -36,7 +36,8 @@ Use Cordova/Phonegap command line tool:
     	if ( window.plugins && window.plugins.iAd ) {
     	    window.plugins.iAd.createBannerView( 
     	    		{
-    		            'bannerAtTop': true
+    		            'bannerAtTop': false,
+			    'overlap': false
     	            }, function() {
     	            	window.plugins.iAd.showAd( true );
     	            }, function(){
@@ -47,13 +48,15 @@ Use Cordova/Phonegap command line tool:
     	}
     }
     function onClickAd() {
-		// count click    	
+	// count click    	
     }
     function onReceiveAd() {
     	// do whatever you want 
     }
     function onFailedToReceiveAd( ret ) {
-    	alert( ret.error );
+    	// alert( ret.error ); 
+        // no need to handle it, sometimes ad just not loaded in time, but iad will try reload, 
+        // once it's loaded, it will be displayed.
     }
 
 ## Donate ##
