@@ -37,7 +37,8 @@ Use Cordova/Phonegap command line tool:
     	    window.plugins.iAd.createBannerView( 
     	    		{
     		            'bannerAtTop': false,
-			    'overlap': false
+			    'overlap': false,
+			    'offsetTopBar' : false
     	            }, function() {
     	            	window.plugins.iAd.showAd( true );
     	            }, function(){

@@ -20,6 +20,7 @@
 @property (assign) BOOL bannerIsInitialized;
 @property (assign) BOOL bannerAtTop;
 @property (assign) BOOL bannerOverlap;
+@property (assign) BOOL offsetTopBar;
 
 - (void) createBannerView:(CDVInvokedUrlCommand *)command;
 - (void) showAd:(CDVInvokedUrlCommand *)command;

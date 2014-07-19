@@ -13,7 +13,7 @@
 
 @interface CDViAd()
 
-- (void) __prepare:(BOOL)atTop overlap:(BOOL)isOverlap;
+- (void) __prepare:(BOOL)atTop overlap:(BOOL)isOverlap offsetTopBar:(BOOL)isOffset;
 - (void) __showAd:(BOOL)show;
 - (bool) __isLandscape;
 
@@ -23,7 +23,7 @@
 @implementation CDViAd
 
 @synthesize bannerView;
-@synthesize bannerIsVisible, bannerIsInitialized, bannerAtTop, bannerOverlap;
+@synthesize bannerIsVisible, bannerIsInitialized, bannerAtTop, bannerOverlap, offsetTopBar;
 
 #pragma mark -
 #pragma mark Public Methods
@@ -58,7 +58,12 @@
         NSString* overlapValue = [arguments objectAtIndex:1];
         BOOL isOverlap = overlapValue ? [overlapValue boolValue] : NO;
         
-        [self __prepare:atTop overlap:isOverlap];
+        NSString* offsetValue = [arguments objectAtIndex:2];
+        BOOL isOffset = offsetValue ? [offsetValue boolValue] : NO;
+        
+        NSLog(@"overlap: %@", overlapValue);
+        
+        [self __prepare:atTop overlap:isOverlap offsetTopBar:isOffset];
         
         // set background color to black
         //self.webView.superview.backgroundColor = [UIColor blackColor];
@@ -145,18 +150,31 @@
                 BOOL isIOS7 = ([[UIDevice currentDevice].systemVersion floatValue] >= 7);
                 CGFloat top = isIOS7 ? mainView.topLayoutGuide.length : 0.0;
                 
-                // move banner view to top
-                bannerViewFrameNew.origin.y = top;
+                if(! self.offsetTopBar) top = 0.0;
                 
-                if(! bannerOverlap) {
+                if(bannerOverlap) {
+                    webViewFrameNew.origin.y = top;
+                    
+                    // banner view is subview of webview
+                    bannerViewFrameNew.origin.y = 0;
+                } else {
+                    // move banner view to top
+                    bannerViewFrameNew.origin.y = top;
+                    
+                    // banner view is brother view of web view
                     // move the web view to below
                     webViewFrameNew.origin.y = bannerViewFrameNew.origin.y + bannerViewFrame.size.height;
-                    webViewFrameNew.size.height = superViewFrameNew.size.height - webViewFrameNew.origin.y;
                 }
+                webViewFrameNew.size.height = superViewFrameNew.size.height - webViewFrameNew.origin.y;
             } else {
-                bannerViewFrameNew.origin.y = superViewFrameNew.size.height - bannerViewFrame.size.height;
-                
-                if(! bannerOverlap) {
+                if(bannerOverlap) {
+                    // banner view is subview of webview
+                    bannerViewFrameNew.origin.y = webViewFrameNew.size.height - bannerViewFrame.size.height;
+                    
+                } else {
+                    // banner view is brother view of webview
+                    bannerViewFrameNew.origin.y = superViewFrameNew.size.height - bannerViewFrame.size.height;
+                    
                     // move the banner view to below
                     webViewFrameNew.origin.y = 0;
                     webViewFrameNew.size.height = superViewFrameNew.size.height - bannerViewFrame.size.height;
@@ -191,7 +209,7 @@
 #pragma mark -
 #pragma mark Private Methods
 
-- (void) __prepare:(BOOL)atTop overlap:(BOOL)isOverlap
+- (void) __prepare:(BOOL)atTop overlap:(BOOL)isOverlap offsetTopBar:(BOOL)isOffset
 {
 	NSLog(@"CDViAd Prepare Ad, bannerAtTop: %d", atTop);
 	
@@ -217,6 +235,7 @@
         
 		self.bannerAtTop = atTop;
         self.bannerOverlap = isOverlap;
+        self.offsetTopBar = isOffset;
 		self.bannerIsInitialized = YES;
 		self.bannerIsVisible = NO;
         
@@ -229,7 +248,7 @@
 	NSLog(@"CDViAd Show Ad: %d", show);
 	
 	if (!self.bannerIsInitialized){
-		[self __prepare:NO overlap:NO];
+		[self __prepare:NO overlap:NO offsetTopBar:NO];
 	}
 	
 	if (!(NSClassFromString(@"ADBannerView") && self.bannerView)) { // ad classes not available

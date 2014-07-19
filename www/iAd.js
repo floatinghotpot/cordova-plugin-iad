@@ -7,7 +7,8 @@ iAdExport = {};
 iAdExport.createBannerView = function(options, successCallback, failureCallback) {
 	var defaults = {
 		'bannerAtTop' : false,
-        'overlap': false
+        'overlap': false,
+	'offsetTopBar': false
 	};
     
 	// Merge optional settings into defaults.
@@ -20,7 +21,7 @@ iAdExport.createBannerView = function(options, successCallback, failureCallback)
                  failureCallback,
                  'iAd',
                  'createBannerView',
-                 [ defaults['bannerAtTop'], defaults['overlap'] ]
+                 [ defaults['bannerAtTop'], defaults['overlap'], defaults['offsetTopBar'] ]
                  );
 };
 
