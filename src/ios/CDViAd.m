@@ -135,6 +135,9 @@
         superViewFrameNew.size.height = superViewFrame.size.width;
     }
     
+    // strange, superViewFrameNew.origin.y is not 0 in IOS6 ?
+    superViewFrameNew.origin.y = 0;
+    
     Class adBannerViewClass = NSClassFromString(@"ADBannerView");
 	if (adBannerViewClass && self.bannerView) {
         CGRect bannerViewFrame = self.bannerView.frame;
@@ -167,6 +170,9 @@
                 }
                 webViewFrameNew.size.height = superViewFrameNew.size.height - webViewFrameNew.origin.y;
             } else {
+                // move webview to top
+                webViewFrameNew.origin.y = 0;
+                
                 if(bannerOverlap) {
                     // banner view is subview of webview
                     bannerViewFrameNew.origin.y = webViewFrameNew.size.height - bannerViewFrame.size.height;
@@ -174,9 +180,6 @@
                 } else {
                     // banner view is brother view of webview
                     bannerViewFrameNew.origin.y = superViewFrameNew.size.height - bannerViewFrame.size.height;
-                    
-                    // move the banner view to below
-                    webViewFrameNew.origin.y = 0;
                     webViewFrameNew.size.height = superViewFrameNew.size.height - bannerViewFrame.size.height;
                 }
             }
@@ -192,12 +195,14 @@
             
             
         } else {
+            NSLog(@"banner hidden");
             webViewFrameNew = superViewFrameNew;
         }
         
         self.webView.frame = webViewFrameNew;
         
     } else {
+        NSLog(@"banner not exists");
         self.webView.frame = superViewFrameNew;
     }
 
