@@ -8,8 +8,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Cordova/CDVPlugin.h>
 #import <iAd/iAd.h>
+#import <Cordova/CDV.h>
 
 @interface CDViAd : CDVPlugin <ADBannerViewDelegate> {
 
