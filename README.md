@@ -1,12 +1,6 @@
 # cordova-plugin-iad #
 ---------------------------
-This is the Cordova Plugin to support Apple iAd on iOS. It provides a way to request ads natively from JavaScript. 
-
-## See Also ##
----------------------------
-Besides using Apple iAd, you have some other options, all working on cordova:
-* [cordova-plugin-flurry](https://github.com/floatinghotpot/cordova-plugin-flurry), Flurry Ad service. 
-* [cordova-plugin-admob](https://github.com/floatinghotpot/cordova-plugin-admob), Google AdMob service.
+Present Apple iAd in Mobile App/Games natively from JavaScript. 
 
 ## How to use ##
 
@@ -26,6 +20,7 @@ Use Cordova/Phonegap command line tool:
 
 ## How to use it in javascript ##
 
+```javascript
     document.addEventListener("deviceready", onDeviceReady, false);
 
    	document.addEventListener("onClickAd", onClickAd, false);
@@ -34,11 +29,10 @@ Use Cordova/Phonegap command line tool:
 
     function onDeviceReady() {
     	if ( window.plugins && window.plugins.iAd ) {
-    	    window.plugins.iAd.createBannerView( 
-    	    		{
+    	    window.plugins.iAd.createBannerView({
     		            'bannerAtTop': false,
-			    'overlap': false,
-			    'offsetTopBar' : false
+    		            'overlap': false,
+    		            'offsetTopBar' : false
     	            }, function() {
     	            	window.plugins.iAd.showAd( true );
     	            }, function(){
@@ -59,14 +53,16 @@ Use Cordova/Phonegap command line tool:
         // no need to handle it, sometimes ad just not loaded in time, but iad will try reload, 
         // once it's loaded, it will be displayed.
     }
+```
 
-## Donate ##
-----------------------------------------------
-You can use this cordova plugin for free. 
+## See Also ##
 
-To support this project, donation is welcome.
+* [AdMob Plugin Pro](https://github.com/floatinghotpot/cordova-admob-pro), enhanced Google AdMob plugin, easy API and more features.
+* [MobFox Plugin Pro](https://github.com/floatinghotpot/cordova-mobfox-pro), enhanced MobFox plugin, support video Ad and many other Ad network with server-side integration.
+* [iAd Plugin](https://github.com/floatinghotpot/cordova-plugin-iad), Apple iAd service. 
+* [FlurryAds Plugin](https://github.com/floatinghotpot/cordova-plugin-flurry), Yahoo Flurry Ads service.
 
-Donation can be accepted via Paypal:
-* [Donate directly via Paypal](http://floatinghotpot.github.io/#donate)
+More Cordova/PhoneGap plugins by Raymond Xie, [click here](http://floatinghotpot.github.io/).
 
+Project outsourcing and consulting service is also available. Please [contact us](http://floatinghotpot.github.io) if you have the business needs.
 
