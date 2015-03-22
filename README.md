@@ -8,8 +8,8 @@ This plugin will not be updated any more.
 
 Please use the pro version instead, which is much better and supports both banner and interstitial iAd.
 
-git repo: https://github.com/floatinghotpot/cordova-iad-pro
-plugin id: com.rjfun.cordova.iad
+* git repo: [https://github.com/floatinghotpot/cordova-iad-pro](https://github.com/floatinghotpot/cordova-iad-pro)
+* plugin id: ```com.rjfun.cordova.iad```
 
 ## See Also ##
 
